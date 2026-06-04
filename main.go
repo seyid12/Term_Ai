@@ -8,9 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -251,7 +249,7 @@ func main() {
 	providerFlag := flag.String("provider", cfg.Provider, "Yapay zeka sağlayıcı: ollama, openai, vllm, azure")
 	modelFlag := flag.String("model", cfg.Model, "Kullanılacak model adı (boş bırakılırsa otomatik algılanır)")
 	listFlag := flag.Bool("list", false, "Ollama'daki mevcut modelleri listele")
-	execFlag := flag.Bool("exec", false, "AI'nın önerdiği komutu onay alarak çalıştır")
+
 	flag.Parse()
 
 	// Ollama model listesi göster
@@ -361,23 +359,15 @@ func main() {
 
 	fmt.Printf("\n🤖 [%s / %s]\n\n", *providerFlag, activeModel)
 
-	// Tüm yanıtı biriktir (--exec için)
-	var fullResponse strings.Builder
-
 	// Kanalları Dinle (Select + for döngüsü)
 	for {
 		select {
 		case token, ok := <-tokenChan:
 			if !ok {
 				fmt.Println()
-				// --exec modunda bash bloklarını çalıştır
-				if *execFlag {
-					execShellBlocks(fullResponse.String())
-				}
 				return
 			}
 			fmt.Print(token)
-			fullResponse.WriteString(token)
 		case err := <-errChan:
 			fmt.Printf("\n❌ Hata: %v\n", err)
 			return
@@ -385,39 +375,4 @@ func main() {
 	}
 }
 
-// execShellBlocks, AI yanıtındaki ```bash ... ``` bloklarını bulup
-// kullanıcıya göstererek onay aldıktan sonra çalıştırır.
-func execShellBlocks(response string) {
-	re := regexp.MustCompile("(?s)```(?:bash|sh)?\\n?(.*?)```")
-	matches := re.FindAllStringSubmatch(response, -1)
 
-	if len(matches) == 0 {
-		return
-	}
-
-	for _, match := range matches {
-		cmd := strings.TrimSpace(match[1])
-		if cmd == "" {
-			continue
-		}
-
-		fmt.Printf("\n⚡ Çalıştırılacak komut:\n  %s\n", cmd)
-		fmt.Print("   Onaylıyor musunuz? [E/h]: ")
-
-		reader := bufio.NewReader(os.Stdin)
-		answer, _ := reader.ReadString('\n')
-		answer = strings.TrimSpace(strings.ToLower(answer))
-
-		if answer == "" || answer == "e" || answer == "y" || answer == "evet" {
-			fmt.Printf("\n📤 Çıktı:\n")
-			shell := exec.Command("bash", "-c", cmd)
-			shell.Stdout = os.Stdout
-			shell.Stderr = os.Stderr
-			if err := shell.Run(); err != nil {
-				fmt.Printf("❌ Komut hatası: %v\n", err)
-			}
-		} else {
-			fmt.Println("   ⏭️  Atlandı.")
-		}
-	}
-}

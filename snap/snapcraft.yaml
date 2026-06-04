@@ -16,7 +16,7 @@ description: |
     term-ai --list
 
 grade: stable
-confinement: classic
+confinement: strict
 base: core22
 
 # Desteklenen mimariler
@@ -43,5 +43,6 @@ parts:
 apps:
   term-ai:
     command: bin/term-ai
-    # classic confinement: shell exec + localhost erişimi + home dizini için
-    # --exec modu bash komutları çalıştırdığından classic gereklidir
+    plugs:
+      - network
+      - home

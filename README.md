@@ -41,7 +41,6 @@ tail -f /var/log/nginx/error.log
 | **Çevrimdışı** | Ollama ile internet gerektirmez |
 | **Gizlilik** | Veriler cihazınızdan çıkmaz |
 | **Streaming** | Yanıtlar kelime kelime akar |
-| **Exec Modu** | AI'nın önerdiği komutu onay alarak çalıştırır |
 | **Otomatik Model** | Ollama modelini otomatik algılar |
 | **Config Dosyası** | `~/.config/term-ai/config` ile kalıcı ayarlar |
 | **Tek Binary** | Kurulumdan sonra tek dosya, sıfır bağımlılık |
@@ -147,8 +146,6 @@ SEÇENEKLER:
   --model string      Model adı (boş bırakılırsa otomatik algılanır)
                       Örnekler: gemma4:e2b, gpt-4o, llama3
 
-  --exec              AI'nın önerdiği bash komutunu onay alarak çalıştırır
-
   --list              Ollama'daki yüklü modelleri listeler
 ```
 
@@ -184,30 +181,7 @@ term-ai --model gemma4:e2b "daha hızlı cevap ver"
 term-ai --model llama3 "bash script yaz"
 ```
 
-#### 🔹 Exec modu — komutu otomatik çalıştır
 
-```bash
-term-ai --exec "diskimde kaç GB boş alan var?"
-```
-
-Çıktı:
-```
-🤖 [ollama / gemma4:e4b]
-
-df -h
-
-⚡ Çalıştırılacak komut:
-  df -h
-   Onaylıyor musunuz? [E/h]: E
-
-📤 Çıktı:
-Filesystem      Size  Used Avail Use% Mounted on
-/dev/nvme1n1p3  460G  194G  243G  45% /
-...
-```
-
-> ⚠️ **Güvenlik:** `--exec` sadece güvendiğiniz sorgular için kullanın.  
-> Çalıştırmadan önce her komut size gösterilir ve onay istenir.
 
 #### 🔹 Çoklu model karşılaştırma
 
