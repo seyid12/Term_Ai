@@ -1,0 +1,20 @@
+# Derlenmiş binary
+term-ai
+
+# Go build artifacts
+*.test
+*.out
+
+# Snap build artifacts
+*.snap
+parts/
+prime/
+stage/
+.snapcraft/
+
+# Go module cache
+vendor/
+
+# OS
+.DS_Store
+Thumbs.db

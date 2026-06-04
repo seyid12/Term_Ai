@@ -1,0 +1,47 @@
+name: term-ai
+version: '1.0.0'
+summary: Linux terminali için çok sağlayıcılı AI asistanı
+description: |
+  term-ai; Ollama, OpenAI, vLLM ve Azure AI ile çalışan bir Linux
+  terminal AI asistanıdır. Yanıtları kelime kelime (streaming) akıtır,
+  önerilen komutları onay alarak çalıştırır (--exec) ve otomatik olarak
+  Ollama modelini algılar.
+
+  Desteklenen sağlayıcılar: ollama, openai, vllm, azure
+
+  Kullanım:
+    term-ai "sorunuz"
+    term-ai --exec "diskimde kaç GB boş alan var?"
+    term-ai --provider openai --model gpt-4o "sorunuz"
+    term-ai --list
+
+grade: stable
+confinement: classic
+base: core22
+
+# Desteklenen mimariler
+architectures:
+  - build-on: [amd64]
+    build-for: [amd64]
+  - build-on: [arm64]
+    build-for: [arm64]
+
+parts:
+  term-ai:
+    plugin: go
+    source: .
+    source-type: local
+    build-snaps:
+      - go/1.22/stable
+    # Derleme sırasında binary'yi doğru konuma koy
+    override-build: |
+      go build -ldflags="-s -w" -o "$SNAPCRAFT_PART_INSTALL/bin/term-ai" .
+    # Sadece binary'yi pakete al, kaynak dosyaları alma
+    stage:
+      - bin/term-ai
+
+apps:
+  term-ai:
+    command: bin/term-ai
+    # classic confinement: shell exec + localhost erişimi + home dizini için
+    # --exec modu bash komutları çalıştırdığından classic gereklidir
