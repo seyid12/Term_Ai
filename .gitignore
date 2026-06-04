@@ -1,5 +1,6 @@
 # Derlenmiş binary
 term-ai
+term-ai-*
 
 # Go build artifacts
 *.test
@@ -10,6 +11,7 @@ term-ai
 parts/
 prime/
 stage/
+overlay/
 .snapcraft/
 
 # Go module cache

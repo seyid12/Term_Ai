@@ -1,420 +1,105 @@
 # 🤖 term-ai
 
-**Linux terminali için çok sağlayıcılı, yerel AI asistanı.**
+**Linux terminali için çok sağlayıcılı, yerel AI asistanı ve Web Tabanlı Terminal (GUI).**
 
-Terminali bilmeden Linux kullanın. Soruyu yazın, AI komutu versin.  
-Ollama ile tamamen çevrimdışı ve gizli çalışır.
-
-```
-term-ai "nginx logları nerede?"
-```
-```
-🤖 [ollama / gemma4:e4b]
-
-/var/log/nginx/access.log  → erişim logları
-/var/log/nginx/error.log   → hata logları
-
-tail -f /var/log/nginx/error.log
-```
+Terminali bilmeden Linux kullanın. Gelişmiş Web Arayüzü sayesinde hem yapay zeka ile sohbet edin hem de anında komutları gömülü terminalde çalıştırın.
+Ollama ile tamamen çevrimdışı ve gizli çalışır. İstediğiniz zaman OpenAI veya Gemini'ye geçiş yapın!
 
 ---
 
-## 📋 İçindekiler
-
-- [Özellikler](#-özellikler)
-- [Gereksinimler](#-gereksinimler)
-- [Kurulum](#-kurulum)
-- [Kullanım Kılavuzu](#-kullanım-kılavuzu)
-- [Sağlayıcı Ayarları](#-sağlayıcı-ayarları)
-- [Yapılandırma](#-yapılandırma)
-- [Gerçek Hayat Örnekleri](#-gerçek-hayat-örnekleri)
-- [Mimari](#-mimari)
-- [Katkı Sağlama](#-katkı-sağlama)
-
----
-
-## ✨ Özellikler
+## ✨ Yeni Nesil Özellikler
 
 | Özellik | Açıklama |
 |---|---|
-| **Çok Sağlayıcı** | Ollama, OpenAI, vLLM, Azure — tek araçta |
-| **Çevrimdışı** | Ollama ile internet gerektirmez |
-| **Gizlilik** | Veriler cihazınızdan çıkmaz |
-| **Streaming** | Yanıtlar kelime kelime akar |
-| **Otomatik Model** | Ollama modelini otomatik algılar |
-| **Config Dosyası** | `~/.config/term-ai/config` ile kalıcı ayarlar |
-| **Tek Binary** | Kurulumdan sonra tek dosya, sıfır bağımlılık |
-
----
-
-## ⚙️ Gereksinimler
-
-- Linux (x86_64 veya arm64)
-- Go 1.22+ *(install.sh otomatik kurar)*
-- En az bir AI sağlayıcı:
-  - **Ollama** (önerilen, ücretsiz): https://ollama.com
-  - **OpenAI** API anahtarı
-  - **vLLM** yerel sunucusu
-  - **Azure AI Foundry** endpoint'i
+| **Modern Web GUI** | Discord/VS Code benzeri şık tasarım, tek tıkla tarayıcınızda açılır. |
+| **Gömülü Terminal** | Tarayıcı içinden gerçek Linux terminalinizi yönetin (xterm.js & PTY). |
+| **Çıktı Çözümleme** | Terminaldeki bir hatayı seçip tek tıkla yapay zekaya göndererek çözüm isteyin. |
+| **Görsel Ayarlar Menüsü** | API anahtarlarınızı ve modellerinizi arayüzden kolayca değiştirin. |
+| **Çok Sağlayıcı** | Ollama, OpenAI, Google Gemini, vLLM, Azure — hepsi tek araçta! |
+| **Sıfır Bağımlılık** | HTML/CSS kodları `//go:embed` ile içine gömülüdür. Tek bir binary (exe) olarak çalışır. |
 
 ---
 
 ## 🚀 Kurulum
 
-### Yöntem 1 — Snap ile (Önerilen, En Kolayı)
-
-Eğer sisteminizde Snap kuruluysa tek komutla yükleyebilirsiniz:
-
+### Yöntem 1 — Snap ile (Önerilen)
 ```bash
 sudo snap install term-ai --classic
 ```
-> *(Not: Paket Snap Store'a yüklendikten sonra bu komut çalışacaktır.)*
 
----
-
-### Yöntem 2 — Otomatik Script ile
-
+### Yöntem 2 — Kaynaktan Derleme
+Sisteminizde Go yüklü olmalıdır.
 ```bash
 git clone https://github.com/seyid12/Term_Ai
 cd Term_Ai
-bash install.sh
-```
-
-`install.sh` şunları otomatik yapar:
-- Go yüklü değilse indirir ve kurar
-- Kodu derler (5 MB tek binary)
-- `/usr/local/bin/term-ai` konumuna kopyalar
-- `~/.config/term-ai/config` yapılandırma dosyasını oluşturur
-- Ollama varsa ilk modeli otomatik ayarlar
-
----
-
-### Yöntem 3 — Manuel Kaynaktan Derleme
-
-**Go ile derlemek için:**
-```bash
-# 1. Go ile derle
 go build -ldflags="-s -w" -o term-ai .
-
-# 2. Global yap
 sudo install -m 755 term-ai /usr/local/bin/term-ai
 ```
 
-**Kendi Snap paketinizi derlemek için:**
-```bash
-snapcraft pack --destructive-mode
-sudo snap install term-ai_1.0.0_amd64.snap --dangerous --classic
-```
-
 ---
 
-### Ollama Kurulumu (Yerel AI için)
+## 📖 Kullanım
 
+Terminalinizden sadece şu komutu çalıştırın:
 ```bash
-# Ollama'yı kur
-curl -fsSL https://ollama.com/install.sh | sh
-
-# Bir model indir (örnekler)
-ollama pull gemma2:2b        # Hafif, hızlı (~1.6 GB)
-ollama pull gemma4:e2b       # Orta (~7 GB)
-ollama pull llama3           # Güçlü (~4.7 GB)
-```
-
----
-
-## 📖 Kullanım Kılavuzu
-
-### Temel Kullanım
-
-```bash
-term-ai "sorunuz buraya"
-```
-
-Varsayılan olarak Ollama ve otomatik algılanan modeli kullanır.
-
----
-
-### Tüm Seçenekler
-
-```
-term-ai [SEÇENEKLER] "soru"
-
-SEÇENEKLER:
-  --provider string   AI sağlayıcı (varsayılan: "ollama")
-                      Geçerli değerler: ollama | openai | vllm | azure
-
-  --model string      Model adı (boş bırakılırsa otomatik algılanır)
-                      Örnekler: gemma4:e2b, gpt-4o, llama3
-
-  --list              Ollama'daki yüklü modelleri listeler
-```
-
----
-
-### Komut Örnekleri
-
-#### 🔹 Basit soru-cevap
-
-```bash
-term-ai "systemd servislerini nasıl listelerim?"
-term-ai "en çok RAM kullanan 5 process'i göster"
-term-ai "bu klasördeki .log dosyalarını sil"
-```
-
-#### 🔹 Yüklü modelleri gör
-
-```bash
-term-ai --list
-```
-
-Çıktı:
-```
-🔍 Ollama'daki yüklü modeller:
-  1) gemma4:e4b
-  2) gemma4:e2b
-```
-
-#### 🔹 Farklı model seç
-
-```bash
-term-ai --model gemma4:e2b "daha hızlı cevap ver"
-term-ai --model llama3 "bash script yaz"
-```
-
-
-
-#### 🔹 Çoklu model karşılaştırma
-
-```bash
-# Hızlı cevap için küçük model
-term-ai --model gemma4:e2b "iptables kuralını sıfırla"
-
-# Detaylı cevap için büyük model
-term-ai --model gemma4:e4b "nginx reverse proxy tam konfigürasyonu"
-```
-
----
-
-## 🔌 Sağlayıcı Ayarları
-
-### Ollama (Varsayılan, Çevrimdışı)
-
-```bash
-# Kurulum gerekmiyorsa doğrudan kullan
-term-ai "sorunuz"
-
-# Model belirt
-term-ai --model llama3 "sorunuz"
-```
-
-Ollama'nın çalıştığından emin olun:
-```bash
-ollama serve          # manuel başlat
-systemctl status ollama  # servis durumu
-```
-
----
-
-### OpenAI
-
-```bash
-export OPENAI_API_KEY="sk-..."
-
-term-ai --provider openai "sorunuz"
-term-ai --provider openai --model gpt-4o "sorunuz"
-```
-
-Varsayılan model: `gpt-4o-mini`
-
----
-
-### vLLM (Kendi Sunucunuz)
-
-```bash
-# vLLM sunucunuz http://localhost:8000 portunda çalışıyorsa
-term-ai --provider vllm "sorunuz"
-term-ai --provider vllm --model "mistralai/Mistral-7B-Instruct" "sorunuz"
-```
-
-Varsayılan model: `mistralai/Mistral-7B-Instruct`
-
----
-
-### Azure AI Foundry
-
-```bash
-export AZURE_AI_KEY="..."
-export AZURE_AI_ENDPOINT="https://your-resource.services.ai.azure.com/v1"
-
-term-ai --provider azure --model "deployment-adi" "sorunuz"
-```
-
-> Azure için `--model` ile **deployment adını** belirtmek zorunludur.
-
----
-
-## ⚙️ Yapılandırma
-
-### Config Dosyası
-
-`~/.config/term-ai/config` dosyasını düzenleyerek varsayılanları kalıcı olarak değiştirin:
-
-```ini
-# term-ai yapılandırma dosyası
-
-# Varsayılan sağlayıcı
-PROVIDER=ollama
-
-# Varsayılan model (boş bırakılırsa otomatik algılanır)
-MODEL=gemma4:e2b
-```
-
-Bu sayede her seferinde `--provider` ve `--model` yazmak zorunda kalmazsınız.
-
-### Ortam Değişkenleri
-
-| Değişken | Açıklama |
-|---|---|
-| `OPENAI_API_KEY` | OpenAI API anahtarı |
-| `AZURE_AI_KEY` | Azure API anahtarı |
-| `AZURE_AI_ENDPOINT` | Azure endpoint URL'si |
-
-Kalıcı yapmak için `~/.bashrc` veya `~/.zshrc` dosyanıza ekleyin:
-
-```bash
-echo 'export OPENAI_API_KEY="sk-..."' >> ~/.bashrc
-source ~/.bashrc
-```
-
----
-
-## 💡 Gerçek Hayat Örnekleri
-
-```bash
-# Servis yönetimi
-term-ai "nginx'i yeniden başlat"
-term-ai "hangi portlar açık?"
-term-ai "firewall kurallarını listele"
-
-# Dosya işlemleri
-term-ai "30 günden eski .log dosyalarını bul ve sil"
-term-ai "bu klasörde en büyük 10 dosyayı listele"
-term-ai "bir klasörü rsync ile yedekle"
-
-# Ağ
-term-ai "benim dış IP adresim ne?"
-term-ai "hangi process 8080 portunu kullanıyor?"
-term-ai "DNS sorgusunu nasıl yaparım?"
-
-# Sistem bilgisi
-term-ai "CPU ve RAM kullanımını izle"
-term-ai "kernel sürümünü öğren"
-term-ai "sisteme kaç süredir açık?"
-
-# Geliştirici araçları
-term-ai "git log'u güzel formatlı göster"
-term-ai "docker container'ları listele ve durumlarını göster"
-term-ai "python virtual environment oluştur"
-
-# Script yazdır
-term-ai "her gece 02:00'de /home dizinini yedekleyen cron job yaz"
-term-ai "disk dolduğunda mail atan bash script yaz"
-```
-
----
-
-## 🏗️ Mimari
-
-```
 term-ai
-│
-├── AIProvider (Interface)
-│   ├── OllamaProvider      → /api/chat  (Yerel, çevrimdışı)
-│   └── OpenAICompatibleProvider → /chat/completions
-│       ├── OpenAI
-│       ├── vLLM
-│       └── Azure AI Foundry
-│
-├── Config (~/.config/term-ai/config)
-│   └── PROVIDER, MODEL varsayılanları
-│
-└── main()
-    ├── flag.Parse()         → CLI argümanları
-    ├── loadConfig()         → Config dosyası
-    ├── autoDetectModel()    → Ollama model tespiti
-    ├── goroutine            → Arka plan HTTP stream
-    │     └── chan<- string  → Token kanalı
-    └── select loop          → Anlık ekrana bas
 ```
+Bu komut arka planda hafif bir yerel sunucu (localhost:8080) başlatır ve varsayılan tarayıcınızda (Chrome, Firefox vb.) otomatik olarak şık Web Arayüzünü açar.
 
-**Teknik detaylar:**
-- Sıfır harici bağımlılık — sadece Go standart kütüphanesi
-- Server-Sent Events (SSE) stream parsing
-- `goroutine` + `channel` ile eşzamanlı streaming
-- `Interface` ile plug-in mimarisi — yeni sağlayıcı eklemek tek struct
+Arayüzde:
+- **Sol / Orta Panel:** Yapay zeka ile sohbet edebilir, komut tavsiyeleri alabilirsiniz.
+- **Sağ Panel (Canlı Terminal):** Normal bir Linux terminali gibi komut yazabilir ve çalıştırabilirsiniz.
+- **Ayarlar:** Sol menüdeki "Ayarlar" butonuna basarak Ollama modellerinizi seçebilir veya OpenAI/Gemini API anahtarlarınızı girip anında kullanıma başlayabilirsiniz. Ayarlarınız `~/.config/term-ai/config` dosyasına şifreli bir şekilde kaydedilir.
 
 ---
 
-## 🔧 Yeni Sağlayıcı Ekleme
+## 🔌 Sağlayıcılar & Desteklenen Modeller
 
-`AIProvider` interface'ini implement eden herhangi bir struct otomatik çalışır:
+### 🦙 Ollama (Varsayılan, Çevrimdışı)
+Ücretsiz, yerel ve gizlilik odaklı.
+- Ayarlar menüsünden "Ollama" seçtiğinizde bilgisayarınızda yüklü tüm modeller otomatik olarak açılır listeye (dropdown) gelir.
+- Yüklü modeliniz yoksa terminalden indirebilirsiniz: `ollama pull gemma2:2b`
 
-```go
-type GroqProvider struct {
-    APIKey string
-}
+### 🤖 OpenAI
+- Ayarlar menüsünden `sk-...` ile başlayan API anahtarınızı girerek `gpt-4o` veya `gpt-4o-mini` kullanabilirsiniz.
 
-func (g *GroqProvider) GenerateStream(
-    prompt string,
-    model string,
-    tokenChan chan<- string,
-    errChan chan<- error,
-) {
-    // Groq OpenAI-uyumlu olduğu için mevcut OpenAICompatibleProvider kullanılabilir
-    p := &OpenAICompatibleProvider{
-        BaseURL: "https://api.groq.com/openai/v1",
-        APIKey:  g.APIKey,
-    }
-    p.GenerateStream(prompt, model, tokenChan, errChan)
-}
-```
+### 🌌 Google Gemini
+- Ücretsiz Google AI Studio API anahtarınızı girerek `gemini-2.5-flash` veya `gemini-1.5-pro` modellerini kullanabilirsiniz.
 
-Ardından `main()` içindeki `switch` bloğuna ekleyin.
+### 🏢 Azure AI & vLLM
+- Kurumsal kullanım (Azure) veya yerel sunucu ağı (vLLM) kullananlar için tam destek mevcuttur.
 
 ---
 
-## 📦 Proje Dosyaları
+## 🏗️ Mimari (Nasıl Çalışıyor?)
 
 ```
-term-ai/
-├── main.go       → Tüm uygulama kodu (tek dosya)
-├── go.mod        → Go modül tanımı
-├── install.sh    → Otomatik kurulum scripti
-└── README.md     → Bu döküman
+term-ai (Tek Dosya Binary)
+│
+├── Web Sunucusu (:8080) & //go:embed static/*
+│   ├── index.html, style.css, app.js
+│
+├── WebSockets
+│   ├── /ws/terminal  <-->  Linux PTY (Sanal Terminal / Bash)
+│   └── /ws/ai        <-->  Yapay Zeka (Ollama/OpenAI/Gemini Stream)
+│
+└── Ayarlar (Config)
+    └── ~/.config/term-ai/config (Provider, Model ve API Anahtarları)
 ```
+
+**Sıfır CGO, Sıfır Bağımlılık:** Tüm web sunucusu, PTY entegrasyonu ve WebSocket bağlantıları tamamen Go'nun gücüyle, harici kütüphane kurulumuna (Node.js vb.) ihtiyaç duymadan çalışır.
 
 ---
 
 ## 🤝 Katkı Sağlama
 
 1. Fork edin
-2. Feature branch oluşturun: `git checkout -b feature/yeni-saglayici`
-3. Değişikliklerinizi commit edin: `git commit -m 'Groq sağlayıcısı eklendi'`
-4. Push edin: `git push origin feature/yeni-saglayici`
-5. Pull Request açın
-
----
-
-## 📄 Lisans
-
-MIT License — özgürce kullanın, değiştirin, dağıtın.
+2. Feature branch oluşturun: `git checkout -b feature/yeni-ozellik`
+3. Push edin ve Pull Request açın!
 
 ---
 
 <div align="center">
-
-**term-ai** ile terminali keşfedin 🚀
-
-Sorun mu var? [Issue açın](https://github.com/seyid12/Term_Ai/issues)
-
+**term-ai** ile terminali keşfedin 🚀<br>
+Sorun mu var? <a href="https://github.com/seyid12/Term_Ai/issues">Issue açın</a>
 </div>

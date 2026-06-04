@@ -1,5 +1,5 @@
 name: term-ai
-version: '1.0.0'
+version: '1.0.1'
 summary: Linux terminali için çok sağlayıcılı AI asistanı
 description: |
   term-ai; Ollama, OpenAI, vLLM ve Azure AI ile çalışan bir Linux

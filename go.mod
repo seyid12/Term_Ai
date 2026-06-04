@@ -1,3 +1,8 @@
 module term-ai
 
-go 1.22.4
+go 1.24.2
+
+require (
+	github.com/creack/pty v1.1.24
+	github.com/gorilla/websocket v1.5.3
+)
