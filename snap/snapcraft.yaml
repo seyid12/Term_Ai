@@ -1,19 +1,17 @@
 name: term-ai
-version: '1.0.1'
-summary: Linux terminali için çok sağlayıcılı AI asistanı
+version: '2.0.1'
+summary: Linux terminali için yerel AI asistanı ve Web Terminali
 description: |
-  term-ai; Ollama, OpenAI, vLLM ve Azure AI ile çalışan bir Linux
-  terminal AI asistanıdır. Yanıtları kelime kelime (streaming) akıtır,
-  önerilen komutları onay alarak çalıştırır (--exec) ve otomatik olarak
-  Ollama modelini algılar.
+  term-ai; Ollama, OpenAI, Google Gemini, vLLM ve Azure AI ile çalışan bir
+  Linux terminal AI asistanıdır. Yeni nesil Web Arayüzü ile tarayıcınızdan
+  hem Linux terminalinizi yönetebilir hem de yapay zeka ile anında sohbet
+  edebilirsiniz. PTY destekli canlı terminal ile yazdığınız komutların
+  hata çıktılarını tek tıkla yapay zekaya gönderebilirsiniz.
 
-  Desteklenen sağlayıcılar: ollama, openai, vllm, azure
+  Desteklenen sağlayıcılar: ollama, openai, gemini, vllm, azure
 
   Kullanım:
-    term-ai "sorunuz"
-    term-ai --exec "diskimde kaç GB boş alan var?"
-    term-ai --provider openai --model gpt-4o "sorunuz"
-    term-ai --list
+    term-ai
 
 grade: stable
 confinement: strict
@@ -45,4 +43,5 @@ apps:
     command: bin/term-ai
     plugs:
       - network
+      - network-bind
       - home

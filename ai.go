@@ -19,9 +19,15 @@ Kurallar:
 - Kullanıcının sistemi zaten Linux olduğunu varsay, bunu açıklama.
 - "Ben bir yapay zeka olduğum için erişimim yok" deme; doğrudan komutu ver.`
 
+// ChatMessage represents a single chat message
+type ChatMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
 // AIProvider, tüm yapay zeka servislerinin uyması gereken kural setidir.
 type AIProvider interface {
-	GenerateStream(prompt string, model string, tokenChan chan<- string, errChan chan<- error)
+	GenerateStream(messages []ChatMessage, model string, tokenChan chan<- string, errChan chan<- error)
 }
 
 // ============================================================================
@@ -72,14 +78,18 @@ func autoDetectOllamaModel(baseURL string) string {
 	return ""
 }
 
-func (o *OllamaProvider) GenerateStream(prompt string, model string, tokenChan chan<- string, errChan chan<- error) {
+func (o *OllamaProvider) GenerateStream(messages []ChatMessage, model string, tokenChan chan<- string, errChan chan<- error) {
 	url := fmt.Sprintf("%s/api/chat", o.BaseURL)
+	
+	var ollamaMessages []ollamaChatMessage
+	ollamaMessages = append(ollamaMessages, ollamaChatMessage{Role: "system", Content: systemPrompt})
+	for _, m := range messages {
+		ollamaMessages = append(ollamaMessages, ollamaChatMessage{Role: m.Role, Content: m.Content})
+	}
+
 	reqBody, _ := json.Marshal(ollamaChatReq{
 		Model: model,
-		Messages: []ollamaChatMessage{
-			{Role: "system", Content: systemPrompt},
-			{Role: "user", Content: prompt},
-		},
+		Messages: ollamaMessages,
 		Stream: true,
 	})
 
@@ -133,15 +143,18 @@ type openAIStreamResp struct {
 	} `json:"choices"`
 }
 
-func (o *OpenAICompatibleProvider) GenerateStream(prompt string, model string, tokenChan chan<- string, errChan chan<- error) {
+func (o *OpenAICompatibleProvider) GenerateStream(messages []ChatMessage, model string, tokenChan chan<- string, errChan chan<- error) {
 	url := fmt.Sprintf("%s/chat/completions", o.BaseURL)
+
+	var openAIMessages []openAIChatMessage
+	openAIMessages = append(openAIMessages, openAIChatMessage{Role: "system", Content: systemPrompt})
+	for _, m := range messages {
+		openAIMessages = append(openAIMessages, openAIChatMessage{Role: m.Role, Content: m.Content})
+	}
 
 	reqBody, _ := json.Marshal(openAIReq{
 		Model: model,
-		Messages: []openAIChatMessage{
-			{Role: "system", Content: systemPrompt},
-			{Role: "user", Content: prompt},
-		},
+		Messages: openAIMessages,
 		Stream: true,
 	})
 

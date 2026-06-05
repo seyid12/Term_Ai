@@ -127,6 +127,8 @@ func handleAIWebsocket(w http.ResponseWriter, r *http.Request, appState *AppStat
 		"model":    activeModel,
 	})
 
+	var history []ChatMessage
+
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
@@ -140,6 +142,8 @@ func handleAIWebsocket(w http.ResponseWriter, r *http.Request, appState *AppStat
 			continue
 		}
 
+		history = append(history, ChatMessage{Role: "user", Content: req.Prompt})
+
 		tokenChan := make(chan string, 100)
 		errChan := make(chan error, 1)
 
@@ -148,8 +152,9 @@ func handleAIWebsocket(w http.ResponseWriter, r *http.Request, appState *AppStat
 		currentModel := appState.ActiveModel
 		appState.mu.RUnlock()
 
-		go provider.GenerateStream(req.Prompt, currentModel, tokenChan, errChan)
+		go provider.GenerateStream(history, currentModel, tokenChan, errChan)
 
+		var aiResponse string
 		// Streaming Loop
 	L:
 		for {
@@ -157,8 +162,10 @@ func handleAIWebsocket(w http.ResponseWriter, r *http.Request, appState *AppStat
 			case token, ok := <-tokenChan:
 				if !ok {
 					conn.WriteJSON(map[string]string{"type": "done"})
+					history = append(history, ChatMessage{Role: "assistant", Content: aiResponse})
 					break L
 				}
+				aiResponse += token
 				conn.WriteJSON(map[string]string{
 					"type":    "token",
 					"content": token,
